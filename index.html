@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mango X Coin</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN for modern icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- === Telegram WebApp SDK (Telegram user data fetcher) === -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- === Monetag SDK Script (                     ) === -->
+    <script src='//libtl.com/sdk.js' data-zone='9941197' data-sdk='show_9941197'></script>
+
+    <style>
+        /* Custom styles for the app container */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+        }
+
+        #app-container {
+            max-width: 420px; /* Typical mobile width */
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        /* Custom scrollbar for better mobile feel */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FFD700;
+            border-radius: 2px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f7f9fc;
+        }
+
+        /* Animation for the Watch Ads button */
+        .ad-button-animated {
+            animation: pulse-grow 2s infinite;
+        }
+
+        @keyframes pulse-grow {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 165, 0, 0.7); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(255, 165, 0, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 165, 0, 0); }
+        }
+
+        /* Tailwind configuration for the theme */
+        .mango-bg { background-color: #FFD700; } /* Gold/Mango Yellow */
+        .mango-text { color: #FFA500; } /* Orange */
+        .coin-green { color: #38A169; } /* Tailwind Green 600 */
+
+        .cooldown-text {
+            /* This class is now used only for styling, 'hidden' class on parent div handles display */
+            font-weight: 600;
+            color: #EF4444; /* Red */
+        }
+        .ad-button-disabled {
+            background-color: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+            animation: none;
+        }
+
+        /* --- LOADING SPINNER STYLES --- */
+        #loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 40vh;
+            color: #FFA500; /* Mango Orange */
+        }
+
+        .mango-loader {
+            width: 60px;
+            height: 60px;
+            background: #FFD700; /* Yellow */
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 0 0 rgba(255, 165, 0, 0.7);
+            animation: pulse-spin 1.5s infinite ease-in-out;
+        }
+        .mango-loader::after {
+            content: '🥭'; /* Mango Emoji */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            line-height: 1;
+        }
+        @keyframes pulse-spin {
+            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(255, 165, 0, 0.7); }
+            50% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(255, 165, 0, 0); }
+            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(255, 165, 0, 0); }
+        }
+        
+        /* --- NEW PROFILE AVATAR STYLES --- */
+        .profile-pic-container {
+            width: 72px; /* Increased size: w-18 */
+            height: 72px; /* h-18 */
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); /* Gold/Orange Gradient */
+            box-shadow: 0 0 0 3px #FFE066, 0 4px 10px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .mango-coin-icon {
+            font-size: 32px; /* Large mango icon */
+            color: white;
+            position: absolute;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            /* Coin background effect using CSS */
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 60%);
+            border-radius: 50%;
+            padding: 5px;
+            line-height: 1;
+        }
+        
+        .profile-pic-container:hover {
+            transform: scale(1.05) rotate(2deg);
+            transition: all 0.3s ease;
+        }
+        
+        /* Home Page Stats Layout Improvement */
+        .stat-card-home {
+            transition: transform 0.2s ease-in-out;
+            cursor: pointer;
+            min-height: 100px; /* Ensure consistent height */
+        }
+        .stat-card-home:hover {
+            transform: translateY(-4px);
+        }
+        
+        /* Notification styles */
+        .notification-bar {
+            background-color: #38A169; /* Green color for notification */
+            color: white;
+            border-radius: 10px;
+            animation: fadeInDown 0.5s ease-out;
+            margin-bottom: 16px;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <!-- Main Content Area -->
+        <main id="main-content" class="flex-grow p-4 overflow-y-auto">
+            <!-- Content will be rendered here by JavaScript -->
+            <div id="loading-spinner" class="text-center p-8">
+                <div class="mango-loader"></div>
+                <p class="mt-4 text-gray-500 font-semibold">Loading App Data...</p>
+            </div>
+        </main>
+
+        <!-- Navigation Bar (Fixed Bottom) -->
+        <nav id="nav-bar" class="flex justify-around bg-white border-t border-gray-200 p-2 shadow-xl sticky bottom-0 z-10">
+            <button onclick="changePage('home')" class="nav-button flex flex-col items-center p-2 text-gray-500 hover:text-orange-500 transition-colors">
+                <i data-lucide="home" class="w-6 h-6"></i>
+                <span class="text-xs mt-1">Home</span>
+            </button>
+            <button onclick="changePage('earn')" class="nav-button flex flex-col items-center p-2 text-gray-500 hover:text-orange-500 transition-colors">
+                <i data-lucide="clapperboard" class="w-6 h-6"></i>
+                <span class="text-xs mt-1">Earn</span>
+            </button>
+            <button onclick="changePage('referral')" class="nav-button flex flex-col items-center p-2 text-gray-500 hover:text-orange-500 transition-colors">
+                <i data-lucide="users" class="w-6 h-6"></i>
+                <span class="text-xs mt-1">Referral</span>
+            </button>
+            <button onclick="changePage('withdraw')" class="nav-button flex flex-col items-center p-2 text-gray-500 hover:text-orange-500 transition-colors">
+                <i data-lucide="wallet" class="w-6 h-6"></i>
+                <span class="text-xs mt-1">Withdraw</span>
+            </button>
+        </nav>
+
+        <!-- Custom Modal/Toast for Messages (Replaces alert()) -->
+        <div id="toast" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-lg shadow-2xl transition-opacity duration-300 opacity-0 z-50"></div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, collection, query, addDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Set Firebase Log Level to Debug for development visibility
+        setLogLevel('Debug');
+
+        // Global variables provided by the Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // --- HARDCODED FIREBASE CONFIGURATION (Provided by User) ---
+        const defaultFirebaseConfig = {
+            apiKey: "AIzaSyAHWxCD_rP9aEqVQuUi8KaYo1SA_esV8Nw",
+            authDomain: "mangoxcoin.firebaseapp.com",
+            databaseURL: "https://mangoxcoin-default-rtdb.firebaseio.com",
+            projectId: "mangoxcoin",
+            storageBucket: "mangoxcoin.firebasestorage.app",
+            messagingSenderId: "672892642717",
+            appId: "1:672892642717:web:a52a32fe18e0dcd92fb74",
+            measurementId: "G-DZDK61709X"
+        };
+        
+        let firebaseConfig = defaultFirebaseConfig;
+
+        if (typeof __firebase_config !== 'undefined' && __firebase_config !== '{}') {
+            try {
+                const envConfig = JSON.parse(__firebase_config);
+                if (envConfig.apiKey && envConfig.projectId) {
+                    firebaseConfig = envConfig;
+                }
+            } catch (e) {
+                console.error("Error parsing environment __firebase_config:", e);
+            }
+        }
+
+        let app, auth, db;
+        let userId = null; 
+        let unsubscribeUserStats = null;
+        let unsubscribeNotifications = null; // NEW: Notification listener
+        let authStateChecked = false;
+
+        // --- TELEGRAM DATA RETRIEVAL ---
+        let telegramUserData = {
+            username: "Anonymous User", 
+            telegramId: "default-id-000",       
+            telegramPhotoUrl: null, 
+        };
+        let isTelegramUserFound = false;
+
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+            const unsafeData = window.Telegram.WebApp.initDataUnsafe;
+            if (unsafeData.user) {
+                isTelegramUserFound = true;
+                const user = unsafeData.user;
+                const fullName = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+                
+                telegramUserData.telegramId = user.id.toString(); 
+                telegramUserData.username = user.username ? `@${user.username}` : fullName;
+                telegramUserData.telegramPhotoUrl = null; 
+            }
+        }
+
+        // --- GLOBAL APP STATE (Accessible via window.appState) ---
+        window.appState = {
+            currentPage: 'home',
+            isAuthReady: false,
+            firebaseUid: null, 
+            userData: {
+                ...telegramUserData, 
+                balance: 0,
+                totalEarned: 0,
+                adsWatchedToday: 0,
+                maxAdsPerDay: 30,
+                totalReferrals: 0,
+                referralEarnings: 0,
+                isDailyClaimed: false,
+                lastDailyClaimDate: "1970-01-01",
+                dailyStreak: 0, // NEW: Daily Streak Counter
+                lastWithdrawalTime: 0, 
+                withdrawalHistory: []
+            },
+            adCooldown: 0, 
+            cooldownInterval: null,
+            latestNotification: null // NEW: For storing latest bot notification
+        };
+
+        // --- CORE FIREBASE & AUTH SETUP ---
+
+        async function initializeFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth); 
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    if (!authStateChecked) {
+                        authStateChecked = true;
+                        
+                        if (user) {
+                            window.appState.firebaseUid = user.uid;
+                            userId = window.appState.userData.telegramId; 
+
+                            window.appState.isAuthReady = true;
+                            console.log("Authenticated with Firebase UID:", user.uid);
+                            setupFirestoreListeners();
+                        } else {
+                            window.appState.isAuthReady = true;
+                            console.error("User unauthenticated. Rendering fallback UI.");
+                            showToast("Error: Failed to authenticate. Check Firebase settings.");
+                            window.renderPage(window.appState.currentPage); 
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                showToast("Initialization failed. Check console for details.");
+                window.appState.isAuthReady = true;
+                window.renderPage(window.appState.currentPage);
+            }
+        }
+
+        /**
+         * Sets up the real-time listener for the user's statistics document.
+         */
+        function setupFirestoreListeners() {
+            if (unsubscribeUserStats) {
+                unsubscribeUserStats(); 
+            }
+            if (unsubscribeNotifications) {
+                unsubscribeNotifications(); 
+            }
+
+            if (!db || !userId || userId === 'default-id-000') {
+                window.renderPage(window.appState.currentPage);
+                return;
+            }
+
+            const docRef = doc(db, 'artifacts', appId, 'users', userId, 'user_data', 'profile');
+            console.log("Listening to profile document:", docRef.path);
+
+            // 1. User Profile Listener
+            unsubscribeUserStats = onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    window.appState.userData = { 
+                        ...window.appState.userData, 
+                        ...data,
+                        username: data.username || window.appState.userData.username,
+                        telegramId: data.telegramId || window.appState.userData.telegramId,
+                        telegramPhotoUrl: data.telegramPhotoUrl !== undefined ? data.telegramPhotoUrl : window.appState.userData.telegramPhotoUrl,
+                        lastWithdrawalTime: data.lastWithdrawalTime || 0,
+                        dailyStreak: data.dailyStreak || 0 // NEW: Sync daily streak
+                    };
+                    console.log("User data updated:", window.appState.userData);
+                } else {
+                    console.log("No profile found. Initializing profile...");
+                    initializeUserProfile();
+                }
+                window.renderPage(window.appState.currentPage);
+            }, (error) => {
+                console.error("Firestore snapshot error (Profile):", error);
+                showToast("Error reading data. Check Security Rules/Network.");
+                window.renderPage(window.appState.currentPage);
+            });
+            
+            // 2. Notification Listener (Query by recipient ID, ordered by timestamp)
+            // Note: This relies on your bot writing to this collection: /artifacts/{appId}/public/data/notifications
+            const notificationQuery = query(
+                collection(db, 'artifacts', appId, 'public', 'data', 'notifications'),
+                // IMPORTANT: Your bot must write a 'recipientId' field equal to the current user's Telegram ID
+                // where: ('recipientId', '==', userId), // Use client-side sorting instead of where for simplicity
+                // orderBy('timestamp', 'desc') // Cannot use orderBy easily
+            );
+            
+            unsubscribeNotifications = onSnapshot(notificationQuery, (snapshot) => {
+                let latestMessage = null;
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Client-side filtering and checking the most recent
+                    if (data.recipientId === userId) {
+                        if (!latestMessage || data.timestamp?.toMillis() > latestMessage.timestamp?.toMillis()) {
+                             latestMessage = { 
+                                message: data.message, 
+                                timestamp: data.timestamp
+                            };
+                        }
+                    }
+                });
+                
+                if (latestMessage && latestMessage.message !== window.appState.latestNotification) {
+                    window.appState.latestNotification = latestMessage.message;
+                    showToast(`[BOT ALERT] ${latestMessage.message}`);
+                    window.renderPage(window.appState.currentPage);
+                }
+                
+            }, (error) => {
+                console.error("Firestore snapshot error (Notifications):", error);
+            });
+        }
+
+        /**
+         * Creates a default user profile document if one doesn't exist.
+         */
+        async function initializeUserProfile() {
+            if (!db || !userId) return;
+
+            const docRef = doc(db, 'artifacts', appId, 'users', userId, 'user_data', 'profile');
+            
+            const initialData = {
+                username: window.appState.userData.username, 
+                telegramId: window.appState.userData.telegramId, 
+                telegramPhotoUrl: null,
+                balance: 5, 
+                totalEarned: 5,
+                adsWatchedToday: 0,
+                maxAdsPerDay: 30,
+                totalReferrals: 0,
+                referralEarnings: 0,
+                isDailyClaimed: false,
+                lastDailyClaimDate: "2000-01-01",
+                dailyStreak: 0, // NEW: Initialize streak to 0
+                lastWithdrawalTime: 0,
+                withdrawalHistory: [],
+                joinDate: serverTimestamp()
+            };
+
+            try {
+                await setDoc(docRef, initialData, { merge: false });
+                window.appState.userData = { ...window.appState.userData, ...initialData };
+                console.log("Default profile created for:", userId);
+            } catch (e) {
+                console.error("Error creating default profile:", e);
+                showToast("Failed to create user profile. Check security rules for write access.");
+            }
+        }
+
+        // --- UTILITY FUNCTIONS ---
+        
+        // NEW: Function to render the MangoCoin Avatar
+        window.renderMangoCoinAvatar = function() {
+            return `
+                <div class="profile-pic-container">
+                    <span class="mango-coin-icon" role="img" aria-label="Mango Coin Avatar">🥭</span>
+                </div>
+            `;
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 3000);
+        }
+
+        // --- PAGE RENDERING (FIXED) ---
+
+        window.changePage = function(page) {
+            window.appState.currentPage = page;
+            window.renderPage(page);
+        }
+
+        window.renderPage = function(page) {
+            const contentDiv = document.getElementById('main-content');
+            const data = window.appState.userData;
+            let html = '';
+
+            if (!window.appState.isAuthReady || (userId === 'default-id-000' && !window.appState.isAuthReady)) {
+                if (contentDiv.querySelector('.mango-loader')) {
+                    return;
+                }
+                contentDiv.innerHTML = `
+                    <div id="loading-spinner" class="text-center p-8">
+                        <div class="mango-loader"></div>
+                        <p class="mt-4 text-gray-500 font-semibold">Loading App Data...</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const loadingSpinner = document.getElementById('loading-spinner');
+            if (loadingSpinner) loadingSpinner.remove();
+
+
+            switch (page) {
+                case 'home':
+                    html = renderHomePage(data);
+                    break;
+                case 'earn':
+                    html = renderEarnPage(data);
+                    break;
+                case 'referral':
+                    html = renderReferralPage(data);
+                    break;
+                case 'withdraw':
+                    html = renderWithdrawPage(data);
+                    break;
+                default:
+                    html = renderHomePage(data);
+            }
+            contentDiv.innerHTML = html;
+            lucide.createIcons();
+
+            if (page === 'earn') {
+                updateAdCooldownUI();
+            }
+        }
+
+        // --- PAGE TEMPLATES (HTML GENERATION) ---
+
+        function renderHomePage(data) {
+            let profileMediaHtml = window.renderMangoCoinAvatar(); // Default to custom avatar
+            
+            const isValidPhotoUrl = data.telegramPhotoUrl && typeof data.telegramPhotoUrl === 'string' && data.telegramPhotoUrl.length > 5;
+
+            if (isValidPhotoUrl) {
+                profileMediaHtml = `
+                    <div class="profile-pic-container">
+                        <img src="${data.telegramPhotoUrl}" 
+                             alt="${data.username} Profile Photo" 
+                             onerror="this.parentNode.outerHTML=window.renderMangoCoinAvatar(); lucide.createIcons();"
+                        >
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="space-y-6">
+                    <!-- NEW: Bot Notification Bar -->
+                    ${window.appState.latestNotification ? `
+                        <div class="notification-bar p-3 flex items-center space-x-2">
+                            <i data-lucide="bell" class="w-5 h-5 flex-shrink-0"></i>
+                            <p class="text-sm font-medium overflow-hidden whitespace-nowrap overflow-ellipsis">${window.appState.latestNotification}</p>
+                        </div>
+                    ` : ''}
+
+                    <!-- Profile Header (Enhanced Design) -->
+                    <div class="flex items-center space-x-4 bg-white p-4 rounded-2xl shadow-xl border-l-4 border-orange-500">
+                        ${profileMediaHtml}
+                        <div class="flex flex-col flex-grow truncate">
+                            <p class="text-2xl font-extrabold text-gray-900 truncate">${data.username}</p>
+                            <p class="text-sm text-gray-600">Telegram ID: ${data.telegramId}</p>
+                        </div>
+                    </div>
+
+                    <!-- Balance Card -->
+                    <div class="p-6 text-center bg-orange-500 text-white rounded-xl shadow-2xl transform hover:scale-[1.01] transition-transform">
+                        <p class="text-lg font-semibold opacity-80">MangoCoin Balance (MC)</p>
+                        <p class="text-5xl font-black mt-1 flex items-center justify-center">
+                            <i data-lucide="gem" class="w-8 h-8 mr-3 fill-white stroke-white"></i>
+                            ${data.balance.toLocaleString()} TK
+                        </p>
+                    </div>
+
+                    <!-- Stats Cards (Improved Layout) -->
+                    <div class="grid grid-cols-2 gap-4">
+                        ${renderStatCard('Total Earned', data.totalEarned.toLocaleString() + ' TK', 'trending-up', 'text-green-600', true)}
+                        ${renderStatCard('Total Referrals', data.totalReferrals.toLocaleString(), 'users', 'text-pink-600', true)}
+                        ${renderStatCard('Ads Watched Today', `${data.adsWatchedToday} / ${data.maxAdsPerDay}`, 'clapperboard', 'text-blue-600', true)}
+                        ${renderStatCard('Daily Streak', `${data.dailyStreak} Days`, 'award', 'text-yellow-600', true)}
+                    </div>
+                    
+                    <p class="text-center text-sm text-gray-400 pt-4">Start Earning MangoCoin Now!</p>
+                </div>
+            `;
+        }
+        
+        function renderStatCard(title, value, icon, colorClass, useHomeStyle = false) {
+            const extraClass = useHomeStyle ? 'stat-card-home' : '';
+            return `
+                <div class="bg-white p-4 rounded-xl shadow-md border-b-4 border-yellow-400 flex flex-col items-center text-center ${extraClass}">
+                    <i data-lucide="${icon}" class="w-6 h-6 mb-2 ${colorClass}"></i>
+                    <p class="text-xs font-medium text-gray-500 mb-1">${title}</p>
+                    <p class="text-lg font-bold text-gray-800">${value}</p>
+                </div>
+            `;
+        }
+
+        function renderEarnPage(data) {
+            const today = new Date().toISOString().slice(0, 10);
+            const isClaimed = data.isDailyClaimed && data.lastDailyClaimDate === today;
+            const progress = (data.adsWatchedToday / data.maxAdsPerDay) * 100;
+            const isDailyLimitReached = data.adsWatchedToday >= data.maxAdsPerDay;
+
+            const days = [5, 5, 5, 5, 5, 5, 50]; // Day 1 to 7 rewards
+
+            return `
+                <div class="space-y-8">
+                    <h2 class="text-2xl font-extrabold text-orange-500 border-b pb-2">Daily Earning Tasks (MangoCoin)</h2>
+
+                    <!-- 1. Daily Check-in System -->
+                    <div class="p-4 bg-yellow-50 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-bold mb-3 text-gray-700 flex items-center">
+                            <i data-lucide="calendar-check" class="w-5 h-5 mr-2 text-yellow-600"></i>Daily Check-in Bonus (${data.dailyStreak} Days Streak)
+                        </h3>
+                        <!-- Streak Calendar -->
+                        <div class="grid grid-cols-7 gap-1.5 text-center mb-4">
+                            ${days.map((reward, index) => `
+                                <div class="p-1.5 rounded-lg text-xs font-semibold 
+                                    ${index < data.dailyStreak ? 'bg-green-400 text-white' : 
+                                    (index === data.dailyStreak && !isClaimed) ? 'bg-yellow-300 text-yellow-900 border-2 border-yellow-500' :
+                                    'bg-gray-200 text-gray-500'}">
+                                    Day ${index + 1}<br>+${reward} TK
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <!-- Claim Button -->
+                        <button id="claim-button" onclick="claimDailyBonus('${today}')"
+                            class="w-full py-3 rounded-xl font-bold transition-all ${isClaimed ? 'bg-green-100 text-green-700 cursor-default' : 'bg-green-500 text-white shadow-lg hover:bg-green-600'}"
+                            ${isClaimed ? 'disabled' : ''}>
+                            ${isClaimed ? 'Bonus Already Claimed Today!' : 'Claim Daily Bonus'}
+                        </button>
+                    </div>
+
+                    <!-- 2. Watch Ads Section -->
+                    <div class="p-4 bg-white rounded-xl shadow-lg border-t-4 border-orange-500">
+                        <h3 class="text-xl font-bold mb-4 text-gray-700 flex items-center">
+                            <i data-lucide="monitor-play" class="w-5 h-5 mr-2 text-orange-600"></i>Watch Video Ads (+9 TK/Ad)
+                        </h3>
+
+                        <!-- Progress Bar -->
+                        <div class="mb-4">
+                            <div class="flex justify-between mb-1 text-sm font-medium text-gray-500">
+                                <span>Today's Progress:</span>
+                                <span>${data.adsWatchedToday} / ${data.maxAdsPerDay}</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="h-2.5 rounded-full ${isDailyLimitReached ? 'bg-red-500' : 'bg-orange-500'}" style="width: ${progress}%"></div>
+                            </div>
+                            ${isDailyLimitReached ? '<p class="text-red-500 font-bold mt-2">Daily limit reached. Come back tomorrow!</p>' : ''}
+                        </div>
+
+                        <!-- Main Ad Button -->
+                        <button id="ad-watch-button" onclick="watchAdAndEarn()"
+                            class="w-full py-4 rounded-xl font-bold text-lg transition-all shadow-xl
+                            ${isDailyLimitReached ? 'ad-button-disabled' : 'bg-orange-500 text-white ad-button-animated hover:bg-orange-600'}"
+                            ${isDailyLimitReached ? 'disabled' : ''}>
+                                Watch Ad Now
+                        </button>
+
+                        <!-- Cooldown Timer & Message -->
+                        <div id="cooldown-status" class="text-center mt-3 p-2 bg-red-50 rounded-lg hidden">
+                            <p class="cooldown-text text-sm">Please Wait: <span id="cooldown-timer">5</span>s for the next ad...</p>
+                        </div>
+
+                        <!-- Motivational Text -->
+                        <p class="text-center text-sm text-gray-500 mt-4 italic">
+                                Click the button to watch an ad! Earn MangoCoin easily.
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderReferralPage(data) {
+            const botUsernameClean = window.appState.botUsername ? window.appState.botUsername.replace('@', '') : 'MangoXCoin_bot';
+            const referralLink = `t.me/${botUsernameClean}?start=${data.telegramId}`;
+
+            return `
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-extrabold text-orange-500 border-b pb-2 mb-4">Refer & Earn System</h2>
+
+                    <!-- Link & Action Section -->
+                    <div class="bg-white p-6 rounded-xl shadow-2xl text-center border-b-4 border-yellow-500">
+                        <h3 class="text-lg font-bold text-gray-700 mb-4">Your Unique Referral Link</h3>
+
+                        <!-- Link Display -->
+                        <div class="bg-gray-100 p-3 rounded-lg border border-dashed border-yellow-500 break-all mb-4">
+                            <p class="text-sm font-mono text-gray-700">${referralLink}</p>
+                        </div>
+
+                        <!-- Action Button (Copy Link - now full width) -->
+                        <button onclick="copyLink('${referralLink}')" class="w-full py-3 bg-green-500 text-white font-bold rounded-xl shadow-md hover:bg-green-600 transition-transform active:scale-95">
+                            <i data-lucide="copy" class="w-5 h-5 inline mr-2"></i>Copy Link
+                        </button>
+                    </div>
+
+                    <!-- Referral Stats -->
+                    <h3 class="text-xl font-bold text-gray-700 mt-6 mb-3">Referral Statistics</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        ${renderStatCard('Bonus per Referral', '25 TK', 'award', 'text-yellow-600')}
+                        ${renderStatCard('Total Referrals', data.totalReferrals.toLocaleString(), 'users-2', 'text-pink-600')}
+                        ${renderStatCard('Total Referral Income', data.referralEarnings.toLocaleString() + ' TK', 'wallet', 'text-green-600')}
+                        ${renderStatCard('Level Bonus', '0', 'zap', 'text-blue-600')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderWithdrawPage(data) {
+            const minWithdraw = 900;
+            const minReferrals = 10;
+            const currentTime = new Date().getTime();
+            const timeSinceLastWithdrawal = currentTime - data.lastWithdrawalTime;
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            const canWithdrawByTime = timeSinceLastWithdrawal >= twentyFourHours;
+
+            // Calculate time remaining for display
+            let timeRemainingText = '';
+            if (!canWithdrawByTime) {
+                const remainingTime = twentyFourHours - timeSinceLastWithdrawal;
+                const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+                const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                timeRemainingText = `${hours}h ${minutes}m`;
+            }
+
+            const canWithdraw = data.totalReferrals >= minReferrals && data.balance >= minWithdraw && canWithdrawByTime;
+
+            return `
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-extrabold text-orange-500 border-b pb-2 mb-4">MangoCoin Withdrawal</h2>
+
+                    <!-- Warning & Requirements -->
+                    <div class="p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg shadow-sm">
+                        <p class="font-bold flex items-center">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 mr-2"></i>Withdrawal Requirements
+                        </p>
+                        <ul class="list-disc pl-5 mt-2 text-sm space-y-1">
+                            <li>Minimum Balance: <span class="font-bold">${minWithdraw} TK</span> (Your Balance: ${data.balance} TK)</li>
+                            <li>Minimum Referrals: <span class="font-bold">${minReferrals}</span> (Your Referrals: ${data.totalReferrals})</li>
+                            <li>Time Limit: <span class="font-bold">Once per 24 hours</span></li>
+                        </ul>
+                        ${!canWithdraw ? 
+                            `<p class="mt-3 font-semibold ${canWithdrawByTime ? 'text-red-700' : 'text-red-700'}">
+                                ${!canWithdrawByTime ? `Next withdrawal available in: ${timeRemainingText}` : 'You meet the time limit, but need more referrals/balance.'}
+                            </p>` : ''
+                        }
+                    </div>
+
+                    <!-- Withdraw Form -->
+                    <div class="bg-white p-5 rounded-xl shadow-lg border-t-4 border-yellow-500">
+                        <label for="payment-method" class="block text-sm font-medium text-gray-700 mb-2">Select Payment Method</label>
+                        <select id="payment-method" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 transition-colors bg-white">
+                            <option value="bKash">bKash</option>
+                            <option value="Nagad">Nagad</option>
+                            <option value="Binance">Binance (USDT TRC20)</option>
+                        </select>
+
+                        <div class="mt-4">
+                            <label for="account-address" id="account-label" class="block text-sm font-medium text-gray-700 mb-2">bKash Mobile Number</label>
+                            <input type="text" id="account-address" placeholder="Enter your bKash mobile number or wallet address" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 transition-colors">
+                        </div>
+
+                        <div class="mt-4">
+                            <label for="withdraw-amount" class="block text-sm font-medium text-gray-700 mb-2">Withdraw Amount (TK)</label>
+                            <input type="number" id="withdraw-amount" min="${minWithdraw}" max="${data.balance}" placeholder="${minWithdraw}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 transition-colors">
+                        </div>
+
+                        <button onclick="submitWithdrawal(${minWithdraw}, ${minReferrals})"
+                            class="w-full mt-6 py-3 font-bold text-lg rounded-xl shadow-xl transition-all ${canWithdraw ? 'bg-orange-500 text-white hover:bg-orange-600 active:scale-95' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}"
+                            ${canWithdraw ? '' : 'disabled'}>
+                                Submit Withdrawal Request
+                        </button>
+                    </div>
+
+                    <!-- Withdrawal History -->
+                    <h3 class="text-xl font-bold text-gray-700 mt-6 mb-3">Withdrawal History</h3>
+                    ${renderWithdrawalHistory(data.withdrawalHistory)}
+                </div>
+            `;
+        }
+
+        function renderWithdrawalHistory(history) {
+            if (history.length === 0) {
+                return '<p class="text-center text-gray-500 p-4 bg-white rounded-xl shadow-sm">No withdrawal history found.</p>';
+            }
+
+            const sortedHistory = [...history].reverse();
+
+            return `
+                <div class="overflow-x-auto bg-white rounded-xl shadow-lg">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-yellow-50">
+                            <tr>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            ${sortedHistory.map(item => `
+                                <tr>
+                                    <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${item.date}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${item.method}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${item.amount.toLocaleString()} TK</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-sm">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                            item.status === 'Approved' ? 'bg-green-100 text-green-800' :
+                                            item.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                            'bg-red-100 text-red-800'
+                                        }">
+                                            ${item.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // --- CORE APPLICATION LOGIC (ACTIONS) ---
+
+        window.claimDailyBonus = async function(today) {
+            const data = window.appState.userData;
+            if (!db || !userId) { showToast("Error: Database connection failed."); return; }
+            const docRef = doc(db, 'artifacts', appId, 'users', userId, 'user_data', 'profile');
+
+            if (data.isDailyClaimed && data.lastDailyClaimDate === today) {
+                showToast("You already claimed the bonus today!");
+                return;
+            }
+
+            try {
+                const bonus = 5; 
+                let newStreak = data.dailyStreak + 1;
+                
+                // Reset streak if user missed a day (simplified logic)
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().slice(0, 10);
+                
+                if (data.lastDailyClaimDate !== yesterdayStr && data.lastDailyClaimDate !== "2000-01-01") {
+                     // If the last claim wasn't yesterday, the streak is broken, start from 1
+                    newStreak = 1; 
+                } else if (data.lastDailyClaimDate === "2000-01-01") {
+                    newStreak = 1;
+                }
+                
+                // Apply 50 TK bonus for every 7 days (simplified logic for UI)
+                const finalBonus = (newStreak % 7 === 0) ? 50 : 5;
+
+                await updateDoc(docRef, {
+                    balance: data.balance + finalBonus,
+                    totalEarned: data.totalEarned + finalBonus,
+                    isDailyClaimed: true,
+                    lastDailyClaimDate: today,
+                    dailyStreak: newStreak // NEW: Update the streak
+                });
+                showToast(`Daily Bonus Claimed! +${finalBonus} TK added. Streak: ${newStreak} days!`);
+            } catch (error) {
+                console.error("Error claiming daily bonus:", error);
+                showToast("Error claiming bonus. Try again.");
+            }
+        }
+
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        window.watchAdAndEarn = async function() {
+            const data = window.appState.userData;
+            if (!db || !userId) { showToast("Error: Database connection failed."); return; }
+            const docRef = doc(db, 'artifacts', appId, 'users', userId, 'user_data', 'profile');
+            
+            await delay(150); 
+
+            const showMonetagAd = window['show_9941197']; 
+
+            if (window.appState.adCooldown > 0) {
+                showToast(`Wait ${window.appState.adCooldown}s before watching the next ad.`);
+                return;
+            }
+
+            if (data.adsWatchedToday >= data.maxAdsPerDay) {
+                showToast("Daily ads limit reached! Come back tomorrow.");
+                return;
+            }
+
+            startAdProcessUIUpdate(true);
+            showToast("Loading Monetag ad. Please wait...");
+
+            if (typeof showMonetagAd !== 'function') {
+                console.error("Monetag SDK function 'show_9941197' not found. Using simulation.");
+                showToast("Monetag SDK not loaded. Simulating ad watch...");
+                
+                const rewardDelay = 5000; 
+                setTimeout(() => {
+                    const reward = 9;
+                    const newAdsWatched = data.adsWatchedToday + 1;
+                    updateDoc(docRef, {
+                        balance: data.balance + reward,
+                        totalEarned: data.totalEarned + reward,
+                        adsWatchedToday: newAdsWatched
+                    }).then(() => {
+                        showToast(`Ad Watched Successfully! +${reward} TK credited (Simulated)`);
+                        window.appState.adCooldown = 5; 
+                        startCooldownTimer();
+                    }).catch(error => {
+                        console.error("Error updating ad watch stats (Simulation):", error);
+                        showToast("Ad reward failed to credit (Simulation).");
+                        window.appState.adCooldown = 5; 
+                        startCooldownTimer();
+                    });
+                }, rewardDelay);
+                return; 
+            }
+            
+            // --- MONETAG INTEGRATION LOGIC START ---
+            try {
+                const result = await showMonetagAd({
+                    type: 'end', 
+                    ymid: userId, 
+                    requestVar: 'earn_button_click' 
+                });
+
+                if (result && result.reward_event_type === 'valued') {
+                    const reward = 9;
+                    const newAdsWatched = data.adsWatchedToday + 1;
+
+                    await updateDoc(docRef, {
+                        balance: data.balance + reward,
+                        totalEarned: data.totalEarned + reward,
+                        adsWatchedToday: newAdsWatched
+                    });
+                    showToast(`Ad Watched Successfully! +${reward} TK credited.`);
+
+                } else if (result && result.reward_event_type === 'not_valued') {
+                    showToast("Ad was shown, but no reward granted (e.g., ad did not complete).");
+                } else {
+                    showToast("Ad process completed without reward.");
+                }
+
+            } catch (error) {
+                console.error("Monetag ad show failed:", error);
+                showToast("Error loading ad. Trying again in 5 seconds.");
+            } finally {
+                window.appState.adCooldown = 5; 
+                startCooldownTimer();
+            }
+            // --- MONETAG INTEGRATION LOGIC END ---
+        }
+
+        function startAdProcessUIUpdate(isLoading) {
+            const adButton = document.getElementById('ad-watch-button');
+            if (!adButton) return;
+
+            if (isLoading) {
+                adButton.disabled = true;
+                adButton.classList.add('ad-button-disabled');
+                adButton.classList.remove('ad-button-animated', 'bg-orange-500');
+                adButton.textContent = 'Ad is Loading...';
+            }
+        }
+        
+        function startCooldownTimer() {
+            if (window.appState.cooldownInterval) {
+                clearInterval(window.appState.cooldownInterval);
+            }
+            updateAdCooldownUI();
+
+            window.appState.cooldownInterval = setInterval(() => {
+                window.appState.adCooldown--;
+                if (window.appState.adCooldown <= 0) {
+                    clearInterval(window.appState.cooldownInterval);
+                    window.appState.adCooldown = 0;
+                    updateAdCooldownUI();
+                    showToast("Cooldown ended! Ready to watch the next ad.");
+                } else {
+                    updateAdCooldownUI();
+                }
+            }, 1000);
+        }
+
+        function updateAdCooldownUI() {
+            const adButton = document.getElementById('ad-watch-button');
+            const cooldownStatus = document.getElementById('cooldown-status');
+            const cooldownTimerEl = document.getElementById('cooldown-timer');
+
+            if (!adButton || !cooldownStatus || !cooldownTimerEl) return; 
+
+            if (window.appState.adCooldown > 0) {
+                adButton.disabled = true;
+                adButton.classList.add('ad-button-disabled');
+                adButton.classList.remove('ad-button-animated', 'bg-orange-500');
+                adButton.textContent = 'Waiting for cooldown...';
+
+                cooldownStatus.classList.remove('hidden');
+                cooldownTimerEl.textContent = window.appState.adCooldown;
+            } else if (window.appState.userData.adsWatchedToday < window.appState.userData.maxAdsPerDay) {
+                adButton.disabled = false;
+                adButton.classList.remove('ad-button-disabled');
+                adButton.classList.add('ad-button-animated', 'bg-orange-500');
+                adButton.textContent = 'Watch Ad Now';
+
+                cooldownStatus.classList.add('hidden'); 
+            }
+        }
+
+        window.copyLink = function(link) {
+            try {
+                const tempInput = document.createElement('input');
+                tempInput.value = link;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                showToast("Referral link copied to clipboard!");
+                document.body.removeChild(tempInput);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                showToast("Failed to copy link. Please copy manually.");
+            }
+        }
+
+        /**
+         * Action: Submit Withdrawal Request (with 24-hour limit)
+         */
+        window.submitWithdrawal = async function(minWithdraw, minReferrals) {
+            const data = window.appState.userData;
+            if (!db || !userId) { showToast("Error: Database connection failed."); return; }
+            
+            const method = document.getElementById('payment-method').value;
+            const account = document.getElementById('account-address').value.trim();
+            const amount = parseInt(document.getElementById('withdraw-amount').value, 10);
+            
+            const currentTime = new Date().getTime();
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            const timeSinceLastWithdrawal = currentTime - data.lastWithdrawalTime;
+
+            // NEW: 24 Hour Limit Check
+            if (timeSinceLastWithdrawal < twentyFourHours) {
+                const remainingTime = twentyFourHours - timeSinceLastWithdrawal;
+                const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+                const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                showToast(`Withdrawal limit reached. Try again in ${hours}h ${minutes}m.`);
+                return;
+            }
+
+            if (data.totalReferrals < minReferrals) {
+                showToast("Requirement failed: You need 10 referrals to withdraw.");
+                return;
+            }
+            if (amount < minWithdraw) {
+                showToast(`Requirement failed: Minimum withdrawal amount is ${minWithdraw} TK.`);
+                return;
+            }
+            if (amount > data.balance) {
+                showToast("Error: Withdrawal amount exceeds your current balance.");
+                return;
+            }
+            if (!account) {
+                showToast("Please enter a valid Account Number or Wallet Address.");
+                return;
+            }
+
+            const docRef = doc(db, 'artifacts', appId, 'users', userId, 'user_data', 'profile');
+            const historyRef = collection(db, 'artifacts', appId, 'public', 'data', 'withdrawals');
+
+            const withdrawalRecord = {
+                userId: userId, 
+                firebaseUid: window.appState.firebaseUid, 
+                username: data.username,
+                amount: amount,
+                method: method,
+                account: account,
+                status: 'Pending',
+                timestamp: serverTimestamp()
+            };
+
+            // 1. Submit Public Record
+            await addDoc(historyRef, withdrawalRecord);
+
+            // 2. Update User Profile (Balance, History, and **Last Withdrawal Time**)
+            const newHistoryItem = {
+                date: new Date().toISOString().slice(0, 10),
+                method: method,
+                amount: amount,
+                status: 'Pending'
+            };
+            
+            const newHistory = [...(data.withdrawalHistory || []), newHistoryItem];
+
+            await updateDoc(docRef, {
+                balance: data.balance - amount,
+                withdrawalHistory: newHistory, 
+                lastWithdrawalTime: currentTime // NEW: Update the timestamp
+            });
+
+            showToast(`Withdrawal of ${amount} TK via ${method} submitted successfully! Status: Pending.`);
+        }
+
+        // --- INITIALIZATION ---
+        window.appState.botUsername = "@MangoXCoin_bot"; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeFirebase();
+
+            document.getElementById('app-container').addEventListener('change', (e) => {
+                if (e.target.id === 'payment-method') {
+                    const label = document.getElementById('account-label');
+                    const input = document.getElementById('account-address');
+                    const value = e.target.value;
+                    if (label) {
+                        if (value === 'Binance') {
+                            label.textContent = 'Binance Wallet Address (USDT TRC20)';
+                            input.placeholder = 'Enter your USDT TRC20 wallet address';
+                        } else if (value === 'bKash') {
+                            label.textContent = 'bKash Mobile Number';
+                            input.placeholder = 'Enter your bKash mobile number';
+                        } else if (value === 'Nagad') {
+                            label.textContent = 'Nagad Mobile Number';
+                            input.placeholder = 'Enter your Nagad mobile number';
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
